@@ -1,4 +1,4 @@
-"""challange_jobandtalent URL Configuration
+"""Challange_jobandtalent URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -14,8 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+
+from social_connected.views import SocialConnected
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(
+        'connected/realtime/<str:source_dev>/<str:target_dev>',
+        SocialConnected.as_view(),
+        name='real-time-connected',
+    ),
 ]
