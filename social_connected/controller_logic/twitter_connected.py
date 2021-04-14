@@ -1,5 +1,5 @@
 from urllib.parse import urljoin
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import requests
 
@@ -16,19 +16,18 @@ class TwitterConnected:
         self.source_dev: str = source_dev
         self.target_dev: str = target_dev
 
-    def connected(self) -> Dict:
+    def connected(self) -> Union[Dict[str, bool], Dict[str, List[str]]]:
         """
-        Check if two twitter users are connceted, that is, if both of them follow each other on twitter.
-        :return:
+        Check if two twitter users are connected, that is, if both of them follow each other on twitter.
+        :return: a dict stating if users are connected or a dict with errors.
         """
         headers = {'Authorization': settings.TWITTER_API_TOKEN}
 
         # checks if devs exist
         error_response = self.__users_exist(headers)
         response = {'errors': error_response}
-        # returns errors one or more devs do not exist in twitter
+        # returns errors if one or more devs do not exist in twitter
         if not error_response:
-            # return error_response
             response = self.__read_relationship(headers)
 
         return response
