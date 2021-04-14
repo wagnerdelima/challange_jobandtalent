@@ -1,0 +1,2 @@
+[flake8]
+exclude=social_connected/migrations/*.py,challange_jobandtalent/settings.py,social_connected/admin.py,challange_jobandtalent/asgi.py,challange_jobandtalent/wsgi.py
