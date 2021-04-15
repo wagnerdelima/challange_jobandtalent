@@ -1,10 +1,10 @@
 from urllib.parse import urljoin
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 import concurrent.futures
 import threading
 
 import requests
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN, HTTP_200_OK
 
 from django.conf import settings
 
@@ -19,7 +19,9 @@ class GithubConnected:
         self.source_dev: str = source_dev
         self.target_dev: str = target_dev
 
-    def connected(self) -> Union[Dict[str, List[Dict[str, str]]], Dict[str, bool]]:
+    def connected(
+        self,
+    ) -> Union[Tuple[Dict[str, List], int], Tuple[Dict[str, bool], int]]:
         """
         Check if two Github users are connected, that is,
         if both of them have at least one organization in common.
@@ -30,57 +32,57 @@ class GithubConnected:
         # Returns a result of type generator.
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             results = executor.map(
-                self.__fetch_developer_organizations, (self.target_dev, self.source_dev)
+                self._fetch_developer_organizations, (self.target_dev, self.source_dev)
             )
 
-        first_result = next(results)
-        second_result = next(results)
+        first_response, first_status = next(results)
+        second_response, second_status = next(results)
+
+        def check_repeated_error(thread_response):
+            """
+            Prevent list of errors from having
+            duplicate error messages.
+            """
+            error = thread_response.get('error')
+            if error in errors:
+                error = None
+
+            if error:
+                errors.append(error)
+
+        errors = []
+        status = HTTP_200_OK
+        # Checks if any of the thread responses contain an error.
+        # If at least one of the developers do not exist in github,
+        # the response is an error.
+        if 'error' in first_response:
+            status = first_status
+            check_repeated_error(first_response)
+        if 'error' in second_response:
+            status = second_status
+            check_repeated_error(second_response)
 
         # if errors are found just stop execution and return
-        errors = self.__check_errors(first_result, second_result)
         if errors:
-            return {'errors': errors}
+            return {'errors': errors}, status
 
         # a user may have more than one organization.
         # if at least one user's organization match another
         # user's organization they are GitHub connected.
         response = {'connected': False}
-        for first_result_org in first_result:
+        for first_result_org in first_response:
             if not response['connected']:
                 # An organization can be identified by its login. so we can check
                 # If the login of one org is within all the other orgs. If so, there is a connection
                 if any(
                     first_result_org.get('login') in second_result_org.values()
-                    for second_result_org in second_result
+                    for second_result_org in second_response
                 ):
                     response = {'connected': True}
 
-        return response
+        return response, status
 
-    def __check_errors(
-        self, first_response: Dict, second_response: Dict
-    ) -> List[Dict[str, str]]:
-        """
-        Check if API responses contain errors, if so put the errors within a list, unrepeated.
-
-        :param first_response: the first API response for one developer.
-        :param second_response: the second API response for another developer.
-        :return: a list of errors
-        """
-
-        def __extract_error(response):
-            error = response.get('error')
-            return error if error not in errors else None
-
-        errors = []
-        if 'error' in first_response:
-            errors.append(__extract_error(first_response))
-        if 'error' in second_response:
-            errors.append(__extract_error(second_response))
-
-        return errors
-
-    def __get_session(self) -> requests.Session:
+    def _get_session(self) -> requests.Session:
         """
         Create a request session for each thread. It's not clear
         from reading the requests library documentation, but reading this issue
@@ -94,9 +96,9 @@ class GithubConnected:
             thread_local.session = requests.Session()
         return thread_local.session
 
-    def __fetch_developer_organizations(
+    def _fetch_developer_organizations(
         self, developer_name: str
-    ) -> Union[List[Dict[str, str]], Dict[str, str]]:
+    ) -> Union[Tuple[List[Dict[str, str]], int], Tuple[Dict[str, str], int]]:
         """
         Fetch to the developer's organizations.
 
@@ -105,24 +107,31 @@ class GithubConnected:
          an error if request is not successful.
         """
         headers = {'Accept': 'application/vnd.github.v3+json'}
-        url: str = self.__github_org_endpoint(developer_name)
+        url: str = self._github_org_endpoint(developer_name)
 
-        session = self.__get_session()
+        session = self._get_session()
         response = session.get(url, headers=headers)
 
         if response.status_code == HTTP_404_NOT_FOUND:
-            return {'error': f'{developer_name} is not a valid user in github'}
+            return (
+                {'error': f'{developer_name} is not a valid user in github',},
+                HTTP_404_NOT_FOUND,
+            )
 
         if response.status_code == HTTP_403_FORBIDDEN:
-            return {'error': response.json()}
+            return {'error': response.json()}, HTTP_403_FORBIDDEN
 
-        return response.json()
+        return response.json(), HTTP_200_OK
 
-    def __github_org_endpoint(self, developer_login: str) -> str:
+    @staticmethod
+    def _github_org_endpoint(developer_login: str) -> str:
         """
         Builds dynamic url based on developers username.
 
         :param developer_login: developer's login.
         :return: url
         """
+        if not developer_login:
+            raise ValueError('developer_login cannot be empty.')
+
         return urljoin(settings.GITHUB_API_BASE_URL, f'users/{developer_login}/orgs')
