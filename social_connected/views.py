@@ -13,5 +13,5 @@ class SocialConnectedView(generics.RetrieveAPIView):
         """
         url_params = {field: self.kwargs[field] for field in self.lookup_fields}
         social_connected = SocialConnected(**url_params)
-        response = social_connected.connected()
-        return Response(response)
+        response, status = social_connected.connected()
+        return Response(response, status=status)
