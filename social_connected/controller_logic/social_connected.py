@@ -1,6 +1,6 @@
 from typing import Dict, Union, List, Tuple
 
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from social_connected.controller_logic.github_connected import GithubConnected
 from social_connected.controller_logic.twitter_connected import TwitterConnected
@@ -22,23 +22,23 @@ class SocialConnected:
             3. The developers have to at least one organization
             in common in GitHub
 
-        :return: a JSON if users are connected or a dict with a list of errors.
+        :return: a positive connected status
+        if users are connected or a dict with a list of errors.
         """
         github_connected, github_status = self.github.connected()
-        twitter_connected = self.twitter.connected()
+        twitter_connected, twitter_status = self.twitter.connected()
 
         if 'errors' in github_connected or 'errors' in twitter_connected:
+            status = HTTP_400_BAD_REQUEST
             if github_status != HTTP_200_OK:
                 status = github_status
-            if twitter_connected.get('status') != HTTP_200_OK:
-                status = twitter_connected.get('status')
+            if twitter_status != HTTP_200_OK:
+                status = twitter_status
 
             return (
                 {
-                    'errors': [
-                        github_connected.get('errors', [])
-                        + twitter_connected.get('errors', [])
-                    ],
+                    'errors': github_connected.get('errors', [])
+                    + twitter_connected.get('errors', []),
                 },
                 status,
             )

@@ -1,7 +1,9 @@
 from urllib.parse import urljoin
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
 import requests
+
+from rest_framework.status import HTTP_404_NOT_FOUND
 
 from django.conf import settings
 
@@ -22,42 +24,35 @@ class TwitterConnected:
         :return: a dict stating if users are connected or a dict with errors.
         """
         headers = {'Authorization': settings.TWITTER_API_TOKEN}
-
         # checks if devs exist
-        error_response = self.__users_exist(headers)
+        error_response, status = self._check_for_user_errors(headers)
         response = {'errors': error_response}
         # returns errors if one or more devs do not exist in twitter
         if not error_response:
-            response = self.__read_relationship(headers)
+            response, status = self._read_relationship(headers)
 
-        return response
+        return response, status
 
-    def __users_exist(self, headers: Dict[str, str]) -> List[str]:
+    def _check_for_user_errors(self, headers: Dict[str, str]):
         """
-        Checks if a certain user (developer in this case) exists in twitter.
-        Returns a True if user exists, otherwise returns False.
+        Checks if the user's (developer in this case) response is successful or has errors.
 
-        :param headers: Authorizations headers.
-        :return: a list of errors if the users do not exist, otherwise an empty list.
+        :param headers:
+        :return: List of errors or an empty list if no errors request is successful.
         """
-        # url that checks if user exists in twitter
-        exist_url = urljoin(settings.TWITTER_API_BASE_URL, 'users/lookup.json')
-        screen_name = ','.join([self.source_dev, self.target_dev])
-        request_params = {'screen_name': screen_name}
-
-        response = requests.get(exist_url, request_params, headers=headers)
+        response = self.__users_exist(headers)
         json_response = response.json()
 
         error_response = []
-        if 'errors' in json_response:
+        if response.status_code == HTTP_404_NOT_FOUND:
             error_response.extend(
                 [
                     f'{self.source_dev} is not a valid user in twitter',
                     f'{self.target_dev} is not a valid user in twitter',
                 ]
             )
-
-        # len 1 means that only one user is a valid user
+        # len 1 means that only one user is a valid user.
+        # this way the users are not connected because one doesn't exist.
         elif len(json_response) == 1:
             name = json_response[0].get('screen_name')
             # the response is either one or both users.
@@ -69,19 +64,22 @@ class TwitterConnected:
 
             error_response.append(f'{name} is not a valid user in twitter')
 
-        return error_response
+        return error_response, response.status_code
 
-    def __read_relationship(self, headers: Dict[str, str]) -> Dict[str, bool]:
+    def _read_relationship(
+        self, headers: Dict[str, str]
+    ) -> Tuple[Dict[str, bool], int]:
         """
         Check if two users follow each other.
         :param headers: Authorization headers
-        :return: json with connected status.
+
+        :return: Connected status and the response status code.
         """
         # url to request for relationship in between two users in twitter
         friendship_url: str = urljoin(
             settings.TWITTER_API_BASE_URL, 'friendships/show.json'
         )
-        request_params = self.__request_params()
+        request_params = self._request_params()
         response = requests.get(friendship_url, request_params, headers=headers)
 
         # raise exceptions if status above is 400 up to 600
@@ -91,12 +89,25 @@ class TwitterConnected:
 
         source = json_response['relationship']['source']
 
-        response = {'connected': True}
-        if not source['following'] and not source['followed_by']:
-            response['connected'] = False
-        return response
+        local_response = {'connected': False}
+        if source['following'] and source['followed_by']:
+            local_response['connected'] = True
+        return local_response, response.status_code
 
-    def __request_params(self) -> Dict[str, str]:
+    def __users_exist(self, headers: Dict[str, str]) -> requests.Response:
+        """
+        Fetch the user from Twitter.
+
+        :return: A response from Twitter
+        """
+        # url that checks if user exists in twitter
+        exist_url = urljoin(settings.TWITTER_API_BASE_URL, 'users/lookup.json')
+        screen_name = ','.join([self.source_dev, self.target_dev])
+        request_params = {'screen_name': screen_name}
+
+        return requests.get(exist_url, request_params, headers=headers)
+
+    def _request_params(self) -> Dict[str, str]:
         """
         Builds params for the GET request.
         """
