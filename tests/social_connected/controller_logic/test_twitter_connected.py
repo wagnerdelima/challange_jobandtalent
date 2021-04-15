@@ -40,10 +40,10 @@ class TestTwitterConnected(TestCase):
             with patch.object(
                 self.twitter_connected, '_check_for_user_errors'
             ) as mock_errors:
-                mock_errors.return_value = []
+                mock_errors.return_value = [], status
 
                 response = self.twitter_connected.connected()
-            self.assertEqual({'connected': True}, response)
+            self.assertEqual(({'connected': True}, status), response)
 
     def test_read_relationship_unconnected_fail(self):
         with patch(
@@ -58,10 +58,10 @@ class TestTwitterConnected(TestCase):
             with patch.object(
                 self.twitter_connected, '_check_for_user_errors'
             ) as mock_errors:
-                mock_errors.return_value = []
+                mock_errors.return_value = [], status
 
                 response = self.twitter_connected.connected()
-            self.assertEqual({'connected': False}, response)
+            self.assertEqual(({'connected': False}, status), response)
 
     def test_read_relationship_one_user_exist_only_fail(self):
         with patch(
@@ -79,10 +79,10 @@ class TestTwitterConnected(TestCase):
                 self.twitter_connected, '_check_for_user_errors'
             ) as mock_errors:
                 error = ['dev1 is not a valid user in twitter']
-                mock_errors.return_value = error
+                mock_errors.return_value = error, status
 
                 response = self.twitter_connected.connected()
-            self.assertEqual({'errors': error}, response)
+            self.assertEqual(({'errors': error}, status), response)
 
     def test_user_exist_success(self):
         with patch(
@@ -102,7 +102,7 @@ class TestTwitterConnected(TestCase):
             )
 
             self.assertEqual(
-                [], response,
+                ([], status), response,
             )
 
     @parameterized.expand([('dev1',), ('dev2',)])
@@ -124,11 +124,11 @@ class TestTwitterConnected(TestCase):
 
             if developer_login == 'dev1':
                 self.assertEqual(
-                    ['dev2 is not a valid user in twitter'], response,
+                    (['dev2 is not a valid user in twitter'], status), response,
                 )
             else:
                 self.assertEqual(
-                    ['dev1 is not a valid user in twitter'], response,
+                    (['dev1 is not a valid user in twitter'], status), response,
                 )
 
     def test_user_exist_fail(self):
@@ -150,10 +150,13 @@ class TestTwitterConnected(TestCase):
             )
 
             self.assertEqual(
-                [
-                    'dev1 is not a valid user in twitter',
-                    'dev2 is not a valid user in twitter',
-                ],
+                (
+                    [
+                        'dev1 is not a valid user in twitter',
+                        'dev2 is not a valid user in twitter',
+                    ],
+                    status,
+                ),
                 response,
             )
 

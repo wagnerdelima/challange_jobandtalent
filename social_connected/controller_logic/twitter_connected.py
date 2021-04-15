@@ -1,5 +1,5 @@
 from urllib.parse import urljoin
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 
 import requests
 
@@ -25,13 +25,13 @@ class TwitterConnected:
         """
         headers = {'Authorization': settings.TWITTER_API_TOKEN}
         # checks if devs exist
-        error_response = self._check_for_user_errors(headers)
+        error_response, status = self._check_for_user_errors(headers)
         response = {'errors': error_response}
         # returns errors if one or more devs do not exist in twitter
         if not error_response:
-            response = self._read_relationship(headers)
+            response, status = self._read_relationship(headers)
 
-        return response
+        return response, status
 
     def _check_for_user_errors(self, headers: Dict[str, str]):
         """
@@ -64,13 +64,16 @@ class TwitterConnected:
 
             error_response.append(f'{name} is not a valid user in twitter')
 
-        return error_response
+        return error_response, response.status_code
 
-    def _read_relationship(self, headers: Dict[str, str]) -> Dict[str, bool]:
+    def _read_relationship(
+        self, headers: Dict[str, str]
+    ) -> Tuple[Dict[str, bool], int]:
         """
         Check if two users follow each other.
         :param headers: Authorization headers
-        :return: json with connected status.
+
+        :return: Connected status and the response status code.
         """
         # url to request for relationship in between two users in twitter
         friendship_url: str = urljoin(
@@ -86,10 +89,10 @@ class TwitterConnected:
 
         source = json_response['relationship']['source']
 
-        response = {'connected': False}
+        local_response = {'connected': False}
         if source['following'] and source['followed_by']:
-            response['connected'] = True
-        return response
+            local_response['connected'] = True
+        return local_response, response.status_code
 
     def __users_exist(self, headers: Dict[str, str]) -> requests.Response:
         """
