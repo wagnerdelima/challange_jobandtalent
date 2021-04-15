@@ -1,14 +1,17 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from social_connected.controller_logic.twitter_connected import TwitterConnected
+from social_connected.controller_logic.social_connected import SocialConnected
 
 
-class SocialConnected(generics.RetrieveAPIView):
+class SocialConnectedView(generics.RetrieveAPIView):
     lookup_fields = ['source_dev', 'target_dev']
 
     def get(self, request, *args, **kwargs):
+        """
+        Check if two developers are connected in GitHub and Twitter.
+        """
         url_params = {field: self.kwargs[field] for field in self.lookup_fields}
-        twitter_connected = TwitterConnected(**url_params)
-        response = twitter_connected.connected()
+        social_connected = SocialConnected(**url_params)
+        response = social_connected.connected()
         return Response(response)

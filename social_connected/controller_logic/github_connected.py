@@ -10,14 +10,21 @@ from django.conf import settings
 
 
 class GithubConnected:
+    """
+    Provides logical mechanism for checking if two developers are connected in GitHub.
+    Two people are considered connected if they have at least one organization in common.
+    """
+
     def __init__(self, source_dev: str = '', target_dev: str = '') -> None:
         self.source_dev: str = source_dev
         self.target_dev: str = target_dev
 
-    def connected(self):
+    def connected(self) -> Union[Dict[str, List[Dict[str, str]]], Dict[str, bool]]:
         """
+        Check if two Github users are connected, that is,
+        if both of them have at least one organization in common.
 
-        :return:
+        :return: a dict if users are connected or a dict with a list of errors.
         """
         # Non-blocking requests to github urls of the two developers.
         # Returns a result of type generator.
@@ -60,14 +67,16 @@ class GithubConnected:
         :param second_response: the second API response for another developer.
         :return: a list of errors
         """
-        errors = []
-        first_error = first_response.get('error')
-        second_error = second_response.get('error')
 
-        if 'error' in first_response and first_error not in errors:
-            errors.append(first_error)
-        if 'error' in second_response and second_error not in errors:
-            errors.append(second_error)
+        def __extract_error(response):
+            error = response.get('error')
+            return error if error not in errors else None
+
+        errors = []
+        if 'error' in first_response:
+            errors.append(__extract_error(first_response))
+        if 'error' in second_response:
+            errors.append(__extract_error(second_response))
 
         return errors
 

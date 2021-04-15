@@ -16,13 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 
-from social_connected.views import SocialConnected
+from social_connected.views import SocialConnectedView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(
         'connected/realtime/<str:source_dev>/<str:target_dev>',
-        SocialConnected.as_view(),
+        SocialConnectedView.as_view(),
         name='real-time-connected',
     ),
 ]
