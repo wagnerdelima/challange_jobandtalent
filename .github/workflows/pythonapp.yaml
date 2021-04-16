@@ -1,0 +1,26 @@
+name: Challange JobAndTalent
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9.4-slim-buster
+
+    - name: Build docker image for tests
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml build --no-cache
+
+    - name: Run dockerised tests
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.tests.yml up --exit-code-from app
+    - name: Take down containers
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.tests.yml down
