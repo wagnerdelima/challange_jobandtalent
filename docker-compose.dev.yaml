@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  app:
+    build: .
+    image: challange_jobandtalent
+    container_name: challange
+    command: >
+      bash -c "pip install -r requirements.dev.txt
+      && sh run.sh"
+    # to be set with ${} from within the CD tool.
+    # hard-coding here for the sake of simplicity.
+    environment:
+      - SECRET_KEY=django-insecure-qi(#-ax@%gt#@sy15zxz+t89pzfl#ce@^x_r&f_#l_^=)saz%p
+      - TWITTER_API_TOKEN=Bearer AAAAAAAAAAAAAAAAAAAAABYw%2FAAAAAAAqQpKJ3PO4ZRfeNApf8Lgfzc9Z48%3D1BPtRT7BnRFEgo0oom5fBHSGMPtnxSMu8RFYcS4LjzcY76qZh5
+      - TWITTER_API_BASE_URL=https://api.twitter.com/1.1/
+      - GITHUB_API_BASE_URL=https://api.github.com/
+    volumes:
+      - .:/code
+    ports:
+      - "80:80"

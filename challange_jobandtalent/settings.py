@@ -11,21 +11,29 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from os.path import join
+from os import getenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+STATIC_ROOT = join(BASE_DIR, 'staticfiles')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qi(#-ax@%gt#@sy15zxz+t89pzfl#ce@^x_r&f_#l_^=)saz%p'
+SECRET_KEY = getenv('SECRET_KEY', 'test')
+
+TWITTER_API_TOKEN = getenv('TWITTER_API_TOKEN')
+TWITTER_API_BASE_URL = getenv('TWITTER_API_BASE_URL')
+
+GITHUB_API_BASE_URL = getenv('GITHUB_API_BASE_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
