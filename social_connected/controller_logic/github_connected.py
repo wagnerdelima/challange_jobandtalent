@@ -4,15 +4,20 @@ import concurrent.futures
 import threading
 
 import requests
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN, HTTP_200_OK
+from rest_framework.status import (
+    HTTP_404_NOT_FOUND,
+    HTTP_403_FORBIDDEN,
+    HTTP_200_OK,
+)
 
 from django.conf import settings
 
 
 class GithubConnected:
     """
-    Provides logical mechanism for checking if two developers are connected in GitHub.
-    Two people are considered connected if they have at least one organization in common.
+    Provides logical mechanism for checking if two developers
+    are connected in GitHub. Two people are considered connected
+    if they have at least one organization in common.
     """
 
     def __init__(self, source_dev: str = '', target_dev: str = '') -> None:
@@ -32,7 +37,8 @@ class GithubConnected:
         # Returns a result of type generator.
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             results = executor.map(
-                self._fetch_developer_organizations, (self.target_dev, self.source_dev)
+                self._fetch_developer_organizations,
+                (self.target_dev, self.source_dev),
             )
 
         first_response, first_status = next(results)
@@ -72,8 +78,10 @@ class GithubConnected:
         response = {'connected': False}
         for first_result_org in first_response:
             if not response['connected']:
-                # An organization can be identified by its login. so we can check
-                # If the login of one org is within all the other orgs. If so, there is a connection
+                # An organization can be identified
+                # by its login. so we can check
+                # If the login of one org is within all
+                # the other orgs. If so, there is a connection
                 if any(
                     first_result_org.get('login') in second_result_org.values()
                     for second_result_org in second_response
@@ -134,4 +142,6 @@ class GithubConnected:
         if not developer_login:
             raise ValueError('developer_login cannot be empty.')
 
-        return urljoin(settings.GITHUB_API_BASE_URL, f'users/{developer_login}/orgs')
+        return urljoin(
+            settings.GITHUB_API_BASE_URL, f'users/{developer_login}/orgs'
+        )

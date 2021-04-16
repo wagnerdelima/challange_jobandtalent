@@ -19,7 +19,9 @@ class TestSocialConnectedView(APITestCase):
             mock_connection.return_value = connected, 200
 
             self.client.force_authenticate(user=self.user)
-            response = self.client.get('/connected/realtime/dev1/dev2', format='json',)
+            response = self.client.get(
+                '/connected/realtime/dev1/dev2', format='json',
+            )
 
             self.assertEqual(200, response.status_code)
             self.assertEqual(connected, response.data)
@@ -37,7 +39,9 @@ class TestSocialConnectedView(APITestCase):
             mock_connection.return_value = error, 404
 
             self.client.force_authenticate(user=self.user)
-            response = self.client.get('/connected/realtime/dev1/dev2', format='json',)
+            response = self.client.get(
+                '/connected/realtime/dev1/dev2', format='json',
+            )
 
             self.assertEqual(404, response.status_code)
             self.assertEqual(error, response.data)

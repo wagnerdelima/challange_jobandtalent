@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from parameterized import parameterized
 
@@ -27,7 +27,9 @@ class TestSocialConnected(TestCase):
 
     def test_social_connected_success(self):
         with patch.object(self.social_connected, 'github') as mocker_github:
-            with patch.object(self.social_connected, 'twitter') as mocker_twitter:
+            with patch.object(
+                self.social_connected, 'twitter'
+            ) as mocker_twitter:
                 connected = {'connected': True}
                 status = 200
                 mocker_twitter.connected.return_value = connected, status
@@ -40,10 +42,18 @@ class TestSocialConnected(TestCase):
     @parameterized.expand([(True, False), (False, True)])
     def test_social_connected_one_social_fail(self, github, twitter):
         with patch.object(self.social_connected, 'github') as mocker_github:
-            with patch.object(self.social_connected, 'twitter') as mocker_twitter:
+            with patch.object(
+                self.social_connected, 'twitter'
+            ) as mocker_twitter:
                 status = 200
-                mocker_twitter.connected.return_value = {'connected': twitter}, status
-                mocker_github.connected.return_value = {'connected': github}, status
+                mocker_twitter.connected.return_value = (
+                    {'connected': twitter},
+                    status,
+                )
+                mocker_github.connected.return_value = (
+                    {'connected': github},
+                    status,
+                )
 
                 response, status = self.social_connected.connected()
                 self.assertEqual(200, status)
@@ -51,8 +61,13 @@ class TestSocialConnected(TestCase):
 
     def test_social_connected_github_error_fail(self):
         with patch.object(self.social_connected, 'github') as mocker_github:
-            with patch.object(self.social_connected, 'twitter') as mocker_twitter:
-                mocker_twitter.connected.return_value = {'connected': True}, 200
+            with patch.object(
+                self.social_connected, 'twitter'
+            ) as mocker_twitter:
+                mocker_twitter.connected.return_value = (
+                    {'connected': True},
+                    200,
+                )
 
                 error_message = self.github_error_fixture('dev1')
                 mocker_github.connected.return_value = (error_message, 404)
@@ -63,7 +78,9 @@ class TestSocialConnected(TestCase):
 
     def test_social_connected_twitter_error_fail(self):
         with patch.object(self.social_connected, 'github') as mocker_github:
-            with patch.object(self.social_connected, 'twitter') as mocker_twitter:
+            with patch.object(
+                self.social_connected, 'twitter'
+            ) as mocker_twitter:
                 error_message = self.twitter_error_fixture('dev2')
                 mocker_twitter.connected.return_value = error_message, 404
 
@@ -75,7 +92,9 @@ class TestSocialConnected(TestCase):
 
     def test_social_connected_error_fail(self):
         with patch.object(self.social_connected, 'github') as mocker_github:
-            with patch.object(self.social_connected, 'twitter') as mocker_twitter:
+            with patch.object(
+                self.social_connected, 'twitter'
+            ) as mocker_twitter:
                 error_message = self.twitter_and_github_error()
                 twitter_message = self.twitter_error_fixture('dev1')
                 github_message = self.github_error_fixture('dev2')

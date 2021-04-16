@@ -70,7 +70,14 @@ class TestGithubConnected(TestCase):
             response = self.github_connected.connected()
 
             self.assertEqual(
-                ({'errors': [{'error': 'dev2 is not a valid user in github'}]}, 403),
+                (
+                    {
+                        'errors': [
+                            {'error': 'dev2 is not a valid user in github'}
+                        ]
+                    },
+                    403,
+                ),
                 response,
             )
 

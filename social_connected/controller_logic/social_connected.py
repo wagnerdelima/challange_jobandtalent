@@ -3,7 +3,9 @@ from typing import Dict, Union, List, Tuple
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from social_connected.controller_logic.github_connected import GithubConnected
-from social_connected.controller_logic.twitter_connected import TwitterConnected
+from social_connected.controller_logic.twitter_connected import (
+    TwitterConnected,
+)
 
 
 class SocialConnected:

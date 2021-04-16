@@ -4,14 +4,18 @@ from parameterized import parameterized
 
 from django.test import TestCase
 
-from social_connected.controller_logic.twitter_connected import TwitterConnected
+from social_connected.controller_logic.twitter_connected import (
+    TwitterConnected,
+)
 
 
 class TestTwitterConnected(TestCase):
     def setUp(self) -> None:
         self.twitter_connected = TwitterConnected('dev1', 'dev2')
 
-    def relationship_fixture(self, following: bool = True, followed_by: bool = True):
+    def relationship_fixture(
+        self, following: bool = True, followed_by: bool = True
+    ):
         return {
             'relationship': {
                 'source': {
@@ -52,7 +56,9 @@ class TestTwitterConnected(TestCase):
             status = 200
             mock_request = MagicMock()
             mock_request.status_code = status
-            mock_request.json.return_value = self.relationship_fixture(following=False)
+            mock_request.json.return_value = self.relationship_fixture(
+                following=False
+            )
             mocker.get.return_value = mock_request
 
             with patch.object(
@@ -124,11 +130,13 @@ class TestTwitterConnected(TestCase):
 
             if developer_login == 'dev1':
                 self.assertEqual(
-                    (['dev2 is not a valid user in twitter'], status), response,
+                    (['dev2 is not a valid user in twitter'], status),
+                    response,
                 )
             else:
                 self.assertEqual(
-                    (['dev1 is not a valid user in twitter'], status), response,
+                    (['dev1 is not a valid user in twitter'], status),
+                    response,
                 )
 
     def test_user_exist_fail(self):
@@ -140,7 +148,10 @@ class TestTwitterConnected(TestCase):
             mock_request.status_code = status
             mock_request.json.return_value = {
                 'errors': [
-                    {'code': 17, 'message': 'No user matches for specified terms.'}
+                    {
+                        'code': 17,
+                        'message': 'No user matches for specified terms.',
+                    }
                 ]
             }
             mocker.get.return_value = mock_request
@@ -164,5 +175,6 @@ class TestTwitterConnected(TestCase):
         params = self.twitter_connected._request_params()
 
         self.assertEqual(
-            {'source_screen_name': 'dev1', 'target_screen_name': 'dev2',}, params
+            {'source_screen_name': 'dev1', 'target_screen_name': 'dev2',},
+            params,
         )
