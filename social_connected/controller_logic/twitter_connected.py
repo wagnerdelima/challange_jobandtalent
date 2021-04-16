@@ -3,7 +3,7 @@ from typing import Dict, List, Union, Tuple
 
 import requests
 
-from rest_framework.status import HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_429_TOO_MANY_REQUESTS
 
 from django.conf import settings
 
@@ -82,13 +82,15 @@ class TwitterConnected:
         request_params = self._request_params()
         response = requests.get(friendship_url, request_params, headers=headers)
 
-        # raise exceptions if status above is 400 up to 600
-        response.raise_for_status()
-
         json_response = response.json()
+
+        # in case twitter api reaches rate limiting
+        if response.status_code == HTTP_429_TOO_MANY_REQUESTS:
+            return json_response, HTTP_429_TOO_MANY_REQUESTS
 
         source = json_response['relationship']['source']
 
+        # if both users follow each other they are twitter-connected
         local_response = {'connected': False}
         if source['following'] and source['followed_by']:
             local_response['connected'] = True
