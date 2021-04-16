@@ -49,6 +49,28 @@ class TestTwitterConnected(TestCase):
                 response = self.twitter_connected.connected()
             self.assertEqual(({'connected': True}, status), response)
 
+    def test_read_relationship_too_many_requests_fail(self):
+        with patch(
+            'social_connected.controller_logic.twitter_connected.requests'
+        ) as mocker:
+            status = 429
+            error = {'errors': {'message': 'Too many requests'}}
+
+            mock_request = MagicMock()
+            mock_request.status_code = status
+            mock_request.json.return_value = error
+            mocker.get.return_value = mock_request
+
+            with patch.object(
+                self.twitter_connected, '_check_for_user_errors'
+            ) as mock_errors:
+                mock_errors.return_value = [], status
+
+                response, status = self.twitter_connected.connected()
+
+            self.assertEqual(429, status)
+            self.assertEqual(error, response)
+
     def test_read_relationship_unconnected_fail(self):
         with patch(
             'social_connected.controller_logic.twitter_connected.requests'
