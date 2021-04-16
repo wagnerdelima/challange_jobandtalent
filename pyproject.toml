@@ -1,6 +1,7 @@
 [tool.black]
 include = '\.pyi?$'
 skip-string-normalization = true
+line-length = 79
 exclude = '''
 /(
     \.git

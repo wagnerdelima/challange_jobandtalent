@@ -11,7 +11,9 @@ class SocialConnectedView(generics.RetrieveAPIView):
         """
         Check if two developers are connected in GitHub and Twitter.
         """
-        url_params = {field: self.kwargs[field] for field in self.lookup_fields}
+        url_params = {
+            field: self.kwargs[field] for field in self.lookup_fields
+        }
         social_connected = SocialConnected(**url_params)
         response, status = social_connected.connected()
         return Response(response, status=status)
