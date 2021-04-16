@@ -3,7 +3,6 @@ version: "3.7"
 services:
   app:
     image: waglds/challange_jobandtalent:latest
-    container_name: challange
     command: sh run.sh
     # to be set with ${} from within the CD tool.
     # hard-coding here for the sake of simplicity.
