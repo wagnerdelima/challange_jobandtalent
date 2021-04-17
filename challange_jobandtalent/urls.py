@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from social_connected.views import SocialConnectedView
+from social_connected.views import SocialConnectedView, RegistryView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,5 +24,10 @@ urlpatterns = [
         'connected/realtime/<str:source_dev>/<str:target_dev>',
         SocialConnectedView.as_view(),
         name='real-time-connected',
+    ),
+    path(
+        'connected/register/<str:source_dev>/<str:target_dev>',
+        RegistryView.as_view(),
+        name='registry',
     ),
 ]
