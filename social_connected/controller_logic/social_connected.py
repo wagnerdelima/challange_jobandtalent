@@ -73,7 +73,7 @@ class SocialConnected:
                 # here connected is False
                 response['connected'] = connected
 
-            self.__save_response(connected, github_connected.get('organizations'))
+            self.__save_response(connected, github_connected.get('organizations', []))
 
         except (IntegrityError, Exception) as exception:
             response = {'errors': [str(exception)]}
