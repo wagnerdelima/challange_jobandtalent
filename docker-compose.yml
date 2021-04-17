@@ -11,5 +11,19 @@ services:
       - TWITTER_API_TOKEN=Bearer AAAAAAAAAAAAAAAAAAAAABYw%2FAAAAAAAqQpKJ3PO4ZRfeNApf8Lgfzc9Z48%3D1BPtRT7BnRFEgo0oom5fBHSGMPtnxSMu8RFYcS4LjzcY76qZh5
       - TWITTER_API_BASE_URL=https://api.twitter.com/1.1/
       - GITHUB_API_BASE_URL=https://api.github.com/
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=database
+      - HOST=db
+      - DB_POST=5432
     ports:
       - "80:80"
+    depends_on:
+      - db
+  db:
+    image: postgres:13.2
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=database
