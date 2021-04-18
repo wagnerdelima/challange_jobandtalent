@@ -22,7 +22,10 @@ class TestGithubConnected(TestCase):
 
             response = self.github_connected.connected()
 
-            self.assertEqual(({'connected': True, 'organizations': ['organization']}, status), response)
+            self.assertEqual((
+                {'connected': True, 'organizations': ['organization']},
+                status
+            ), response)
 
     def test_connect_devs_do_not_exist_fail(self):
         dev1, dev2 = 'dev1', 'dev2'
