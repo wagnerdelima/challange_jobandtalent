@@ -43,12 +43,6 @@ Then, run it with
 
 Remove the `-d` to see attached logs to your terminal.
 
-# Running for Production Purposes
-
-Running in production is easy. One can choose a tag from the Docker Hub images
-and put them on the Makefile, build them and push an updated version.
-
-
 # Running tests locally
 Django tests are very simple to run, just a single django command needs to be executed. However, to avoid
 the hassle of setting up environment variables, this project has a dockerized mechanism of running the tests.
