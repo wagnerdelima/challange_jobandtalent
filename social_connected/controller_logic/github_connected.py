@@ -20,7 +20,7 @@ class GithubConnected:
     if they have at least one organization in common.
     """
 
-    def __init__(self, source_dev: str = '', target_dev: str = '') -> None:
+    def __init__(self, source_dev: str = '', target_dev: str = ''):
         self.source_dev: str = source_dev
         self.target_dev: str = target_dev
 
@@ -76,6 +76,7 @@ class GithubConnected:
         # if at least one user's organization match another
         # user's organization they are GitHub connected.
         response = {'connected': False}
+        organizations = []
         for first_result_org in first_response:
             if not response['connected']:
                 # An organization can be identified
@@ -83,10 +84,15 @@ class GithubConnected:
                 # If the login of one org is within all
                 # the other orgs. If so, there is a connection
                 if any(
-                    first_result_org.get('login') in second_result_org.values()
+                    (org := first_result_org.get('login'))
+                    in second_result_org.values()
                     for second_result_org in second_response
                 ):
-                    response = {'connected': True}
+                    organizations.append(org)
+                    response = {
+                        'connected': True,
+                        'organizations': organizations
+                    }
 
         return response, status
 

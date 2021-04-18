@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.db import IntegrityError
 from parameterized import parameterized
 
 from django.test import TestCase
@@ -105,3 +106,22 @@ class TestSocialConnected(TestCase):
                 response, status = self.social_connected.connected()
                 self.assertEqual(404, status)
                 self.assertEqual(error_message, response)
+
+    def test_social_connected_exception_on_save_fail(self):
+        with patch.object(self.social_connected, 'github') as mocker_github:
+            with patch.object(
+                self.social_connected, 'twitter'
+            ) as mocker_twitter:
+                connected = {'connected': True}
+                status = 200
+                mocker_twitter.connected.return_value = connected, status
+                mocker_github.connected.return_value = connected, status
+
+                with patch.object(
+                    self.social_connected, '_save_response'
+                ) as mocker_social:
+                    mocker_social.side_effect = IntegrityError('Error on save')
+
+                    response, status = self.social_connected.connected()
+                    self.assertEqual(500, status)
+                    self.assertEqual({'errors': ['Error on save']}, response)
