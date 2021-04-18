@@ -66,14 +66,18 @@ class SocialConnected:
         try:
             # if both twitter and github responses are
             # connected than the devs are both connected
-            if connected := (github_connected['connected'] and twitter_connected['connected']):
+            if connected := (github_connected['connected']
+                             and twitter_connected['connected']):
                 # connected is True
                 response['connected'] = connected
             else:
                 # here connected is False
                 response['connected'] = connected
 
-            self.__save_response(connected, github_connected.get('organizations', []))
+            self._save_response(
+                connected,
+                github_connected.get('organizations', [])
+            )
 
         except (IntegrityError, Exception) as exception:
             response = {'errors': [str(exception)]}
@@ -81,12 +85,17 @@ class SocialConnected:
 
         return response, status
 
-    def __save_response(self, connected: bool, organizations: List[str]) -> None:
+    def _save_response(
+        self,
+        connected: bool,
+        organizations: List[str]
+    ) -> None:
         """
         Save results. Results are saved only if there is no
         error from either GitHub or Twitter API.
 
-        Organizations are only saved if devs are connected in both Twitter and GitHub.
+        Organizations are only saved if devs
+        are connected in both Twitter and GitHub.
         """
         with transaction.atomic():
             first_registry = SocialRegistry.objects.filter(
@@ -101,7 +110,8 @@ class SocialConnected:
                 transaction_id=transaction_id,
                 connected=connected
             )
-            # we create organizations based on the id of the first dev1/dev2 endpoint call.
+            # we create organizations based on the
+            # id of the first dev1/dev2 endpoint call.
             registry = first_registry if first_registry else new_registry
             # only creates organizations if there devs are connected.
             if connected:
@@ -113,4 +123,7 @@ class SocialConnected:
                     ) for org in organizations
                 ]
 
-                CommonOrganizations.objects.bulk_create(orgs, ignore_conflicts=True)
+                CommonOrganizations.objects.bulk_create(
+                    orgs,
+                    ignore_conflicts=True
+                )

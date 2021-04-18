@@ -5,8 +5,9 @@ from django.utils import timezone
 class SocialRegistry(models.Model):
     """
     Represents a connection between two developers.
-    Contain a transaction id to match the exact connection with the Organization,
-    in case the developers stop connecting in GitHub and Twitter
+    Contain a transaction id to match the exact connection
+    with the Organization, in case the developers stop
+    connecting in GitHub and Twitter
     and at a later stage they reconnect.
     """
 
@@ -35,14 +36,16 @@ class SocialRegistry(models.Model):
 
     registered_at = models.DateTimeField(default=timezone.now)
 
-    def __str__(self):
-        return f'Record of {self.source_developer} and {self.target_developer}'
+    def __str__(self):  # pragma: no cover
+        return f'Record of {self.source_developer} ' \
+               f'and {self.target_developer}'
 
 
 class CommonOrganizations(models.Model):
     """
     Represents an Organization that is linekd to two developers.
-    Contain a transaction id to match the exact connection with the SocialRegistry,
+    Contain a transaction id to match the exact
+    connection with the SocialRegistry,
     in case the developers stop connecting in GitHub and Twitter
     and at a later stage they reconnect.
     """
@@ -64,5 +67,5 @@ class CommonOrganizations(models.Model):
         help_text='Name of organization common to both developers',
     )
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return f'{self.organization}'

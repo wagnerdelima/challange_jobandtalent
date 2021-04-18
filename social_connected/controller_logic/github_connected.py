@@ -12,8 +12,6 @@ from rest_framework.status import (
 
 from django.conf import settings
 
-from social_connected.models import CommonOrganizations
-
 
 class GithubConnected:
     """
@@ -86,11 +84,15 @@ class GithubConnected:
                 # If the login of one org is within all
                 # the other orgs. If so, there is a connection
                 if any(
-                    (org := first_result_org.get('login')) in second_result_org.values()
+                    (org := first_result_org.get('login'))
+                    in second_result_org.values()
                     for second_result_org in second_response
                 ):
                     organizations.append(org)
-                    response = {'connected': True, 'organizations': organizations}
+                    response = {
+                        'connected': True,
+                        'organizations': organizations
+                    }
 
         return response, status
 
