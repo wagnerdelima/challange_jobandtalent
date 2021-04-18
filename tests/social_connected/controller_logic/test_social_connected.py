@@ -31,7 +31,7 @@ class TestSocialConnected(TestCase):
             with patch.object(
                 self.social_connected, 'twitter'
             ) as mocker_twitter:
-                connected = {'connected': True}
+                connected = {'connected': True, 'organizations': ['org1', 'org2']}
                 status = 200
                 mocker_twitter.connected.return_value = connected, status
                 mocker_github.connected.return_value = connected, status

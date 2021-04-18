@@ -69,7 +69,7 @@ class SocialConnected:
             if connected := (github_connected['connected']
                              and twitter_connected['connected']):
                 # connected is True
-                response['connected'] = connected
+                response = github_connected
             else:
                 # here connected is False
                 response['connected'] = connected
