@@ -93,8 +93,3 @@ If you wish to see your Docker Cluster with applications running, please run thi
 
 Then visit http://127.0.0.1:8080 to see your cluster.
 
-I took the liberty of deploying this application in two nodes I created in Hetzner. Node1 is a manager and Node2 is a
-Worker. You may visit http://116.203.113.111:8080/ and see the visualizer with the two nodes and one app in each of them.
-
-# Live example
-There is a live example of this application deployed at http://116.203.113.111
